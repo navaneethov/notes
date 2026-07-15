@@ -9,13 +9,21 @@ Note for interview
 ### most useful commands
 - cd, cp, vim, top, ps, grep, awk, sed, tr, free -h
 - grep -A5 -B5 "error" /var/log/syslog => get 5 line after and 5 line before of match
+    - -E for (a|b)
+    - -P for "\bcol\b"
 - `awk -F ":" '{ print $1 }'` /etc/passwd
 - tr -d ':' => only std input, translate
 - sed => -i in-place, -E,r extended re, -n, -i.back
     - sed 's/root/navaneeth/g' # s substitute, g global
-    - sed '3d' text.txt
-    - sed -n '3,5p' test.txt
-
+    - sed '3d' text.txt  # delete 3rd line
+    - sed -n '3,5p' test.txt  # print 3 - 5 lines
+- date
+    - date -u => utc
+    - date +%s => epoch
+    - date -d "+1 day 2 hours" +%s
+    - date -d "2025-04-23"
+    - always convert to epoch to do calculation
+    
 ### Troubleshooting
 - USE => utlilization, saturation, error
 - logs, journelctl -u <unit> --since "1 hour ago" --no-pager or tail /var/log/syslog
@@ -148,7 +156,7 @@ Docker is a linux process run in an isolated kernel namespace
 ## k8s
 Container orchestration platform
 
-### Architecture
+### Architecture - Layers
 1. Control plane - Brain
     - API server, share state
     - etcd => store desired state, database like, key-value store
@@ -217,7 +225,7 @@ Container orchestration platform
     - storage ephemeral storage
 - Statefuset
     - strict naming, db-01, db-02
-    - Deployment is oredered
+    - Deployment is ordered
     - each pod bounds to pvc storage, if recreated it will bound same
 
 ---
@@ -240,7 +248,7 @@ Container orchestration platform
 - ch := make(chan string) => pass to goroutine => ch <- "done" => state := <-ch 
 
 ### select
-- it blocks until one of its channel case is ready to execute
+- it blocks until one of its **channel case** is ready to execute
 ```go
 select {
 case msg1 := <-channelA:
@@ -311,6 +319,11 @@ case <-time.After(time.Second * 2):
 - dict .get() vs my_dict[], safe return null if not there vs error if key not found 
 
 ### package management
+- module => a single python file containing var, func, class etc and imported to other py files using import my_module
+- package:
+    - is a dir containing multiple module files
+    - __init__.py => tells that this folder is a python package, not needed in modern python
+    - still can be used for, deciding what shall imported at package level, run some initialization code
 
 ### Decorator
 - as name indicate it decorate a function, ie modify its behaviour without changing the code
@@ -319,9 +332,10 @@ case <-time.After(time.Second * 2):
 - generator is a func to create itratable object
 - it use a special kw yield, executed using next(), it pause the execution for each iteration and remember its state
 
-### context
+### context manager
 - it properly manage the closure of an object
 - with, example open file
+- call .close at the end
 
 ### FastAPI
 ```python
@@ -399,6 +413,51 @@ after_2days = now + datetime.timedelta(days=2)
 ### error handling
 
 ### boto3
+
+---
+## Bash
+
+### vars
+- better use ${}:
+    - clear boundaries ${var}s
+    - default value => ${var:-"test"} -> temp, ${var:="test"} value will change
+    - ${#var}
+    - work well with array
+- declare -r var="const value"
+- declare -A my_array
+    - my_array=("apple", "orange")
+    - dict => associated array, declare -A my_dict; my_dict=(["name"]="Alice", ["age"]=23)
+
+### test
+- test -f /var/log/app/app.log
+- [[ -f /var/log/app/log ]]
+- test file or dir
+    - -e => exist
+    - -f => file exist
+    - -d => dir
+    - -s => size > 0
+- var check
+    - -z => zero, empty
+    - -n => non-zero
+- number
+    - -eq, -ne, -gt, -ge, -lt, -le
+
+### if
+- if [[ condition ]]; then echo "do something"; fi
+- use [[ ]] => modern, work well with var with space, and or supported
+
+### Loops
+- for
+    - for i in ${my_array}; do echo ${i}; done
+    - use ${!my_array} for index or key
+    - for i in $(command)   # space,tab or new line seperated
+- while
+    - i=0; while [[ $i < 5 ]]; do echo $i; ((i++)); done
+    - cat file.txt | while read line; do echo ${line}; done
+
+### output redirection
+- code -> 0 = stdin, 1 = stdout, 2 = stderr
+- 2> /dev/null (single), &> /dev/null or 2&> or 1&> (both)
 
 ---
 
@@ -495,23 +554,43 @@ scrape_config:
 ## SRE
 if you are not measuring you are not operating
 
-## terminologies
+### terminologies
 - SLO
 - automate toil
 - blast radius
 - 
 
-## Suggestion for builds
-- should be reproduceble, by pinning dependency using dock files, --no-cahe, should build in a seperate build env rather than dev laptop etc
+### Suggestion for builds
+- should be reproducable, by pinning dependency using dock files, --no-cahe, should build in a seperate build env rather than dev laptop etc
 - treat ci-cd as equivalant to production deployment and track through SLO
 - parallel CI jobs
 - use cache where ever possible
 - build once, promote to dev -> stagging -> prod
 - produce rollback ready artifacts
 
-## Improve build speed
+### Improve build speed
 - run tasks parellel
 - use cache
 - pre baked runner images
 - pre baked builer image
 - if it is new service try to use go lang, it is created for speed
+
+### improve system reliability through CI/CD pipelines
+    Developer Push
+    Lint
+    Unit Tests
+    Static Analysis (SonarQube)
+    Dependency & Secret Scan
+    Build Docker Image
+    Image Scan (Trivy)
+    Integration Tests
+    Publish Image Registry
+    Deploy to Staging
+    Smoke Tests
+    Canary Deployment (Production) -> 80%, 90%
+    Monitor Metrics & Logs
+    Promote to 100% or Rollback
+
+## Network
+
+### TCP/IP
